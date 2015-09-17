@@ -1,5 +1,5 @@
 CC=gcc
-FLAGS=-pthread -g -m64
+FLAGS=-pthread  -m64 -g
 all:
 	$(CC) $(FLAGS) main.c  -o main
 clean:

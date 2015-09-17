@@ -1,8 +1,12 @@
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <strings.h>
 #include <pthread.h>  // pthread api
+#include <unistd.h>   // unix standard apis
+#include <sched.h>
+#include "main.h"
 /* WISHLIST
  *
  * TODO: 
@@ -17,9 +21,11 @@
 
 #define REGION_LENGTH 100
 pthread_t *tid;  // array of thread ids
-uint64_t num_threads = 1;
+uint64_t num_threads = 8;
 char * leader_region;
 uint64_t * global_max;
+uint64_t global_count; 
+uint64_t barrier_assoc;
 
 struct barrier_entry { 
     uint64_t wait_time;
@@ -60,317 +66,6 @@ rdtsc (void)
     return lo | ((uint64_t)(hi) << 32);
 }
 
-void test3(void * x) {
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-}
-
-void test2(void * x) {
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-}
-
-void test(void * x) {
-    printf("testing \n");
-}
-
-void barrier_sleep(uint64_t approx_time) {
-    if (approx_time < 500) {
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-    } else if (approx_time < 2000) {
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-        asm volatile ("pause");
-    }
-
-}
 
 int counter(void (*func)(void *), void * data){
     uint64_t start, end;
@@ -445,7 +140,7 @@ void register_barrier_tctx(void (*func)(void*),
         barrier_entry_t ** barrier_tail, int * num_barriers) {
 
     func_info_t * func_info = register_timed_function_gctx(func);
-    barrier_entry_t * ptr = malloc(sizeof(barrier_tail));
+    barrier_entry_t * ptr = malloc(sizeof(barrier_entry_t));
     bzero(ptr, sizeof(barrier_tail));
     ptr->prefix_cycles = func_info->cycles;
     ptr->func = func;
@@ -511,16 +206,13 @@ void update_barrier_stat_info_tctx(barrier_entry_t * barrier_head, int thread_id
 void resolve_barriers_tctx(uint64_t thread_id, barrier_entry_t * barrier_head) {
     int leader = thread_id == 0 ? 1 : 0;
     if (leader) { 
-        printf("%llu\t%llu\t%llu\n", barrier_head->next, barrier_head->func, barrier_head->prefix_cycles);
         //allocate page for everyone to write pointers 
         //to their structures (or just memcpy stuff over?)
         //maybe this should be reserved 
         //this will cause cache flush and invalidation
         char * mem_write_area = (char *)malloc(sizeof(uint64_t) * REGION_LENGTH * num_threads);
-        //leader_region = mem_write_area;
+        leader_region = mem_write_area;
         bzero(mem_write_area, sizeof(uint64_t)*REGION_LENGTH*num_threads);
-        printf("%llu\t%llu\t%llu\n", barrier_head->next, barrier_head->func, barrier_head->prefix_cycles);
-        fflush(0);
     }
     big_barrier();
     write_to_leader_page_tctx(thread_id, barrier_head);
@@ -539,7 +231,20 @@ void barrier(barrier_entry_t ** barrier_head) {
     barrier_entry_t * cur = *barrier_head;
     uint64_t wait_time = cur->wait_time;
     cur->func(NULL);
-    barrier_sleep(wait_time);
+    barrier_sleep(1999);
+    barrier_sleep(1999);
+    barrier_sleep(1999);
+    barrier_sleep(1999);
+    barrier_sleep(1999);
+    barrier_sleep(1999);
+    barrier_sleep(1999);
+    barrier_sleep(1999);
+    barrier_sleep(1999);
+    barrier_sleep(1999);
+    barrier_sleep(1999);
+    barrier_sleep(1999);
+    barrier_sleep(1999);
+    //barrier_sleep(wait_time);
     pop_barrier_entry(barrier_head);
 }
 
@@ -551,11 +256,21 @@ void initialize_linked_list() {
 }
 
 
+//TODO: pace with 1 thread
 void * barrier_shell_tctx(void * arg) {
     int thread_id = (long) arg;
+    int adding = (thread_id+1)*100;
     int num_barriers = 0;
-    barrier_entry_t * barrier_tail;
-    barrier_entry_t * barrier_head; //= malloc(sizeof(barrier_entry_t));
+    int sync_result;
+    cpu_set_t set;
+    CPU_ZERO(&set);
+    CPU_SET(thread_id,&set);
+    if (sched_setaffinity(0,sizeof(set),&set)<0) { // do it
+        perror("Can't setaffinity");  // hopefully doesn't fail
+        exit(-1);
+  }
+    barrier_entry_t * barrier_tail = NULL;
+    barrier_entry_t * barrier_head = NULL; //= malloc(sizeof(barrier_entry_t));
     //barrier_entry_t * barrier_head = barrier_tail;
     if (thread_id % 2 == 0) {
         register_barrier_tctx(test2, &barrier_tail, &num_barriers);
@@ -563,14 +278,17 @@ void * barrier_shell_tctx(void * arg) {
         register_barrier_tctx(test3, &barrier_tail, &num_barriers);
     }
     barrier_head = barrier_tail;
-    big_barrier();
-    fflush(0);
     //end body, resolve barriers
     resolve_barriers_tctx(thread_id, barrier_head);
+    big_barrier();
+    printf("before barriers %d\n", thread_id);
+    //TODO: fflush sideeffects? added time? 
+    __sync_fetch_and_add(&barrier_assoc, adding);
     while (num_barriers > 0) {
         barrier(&barrier_head);
+        num_barriers--;
     }
-
+    sync_result = __sync_val_compare_and_swap(&barrier_assoc, 3600, 3601);
 }
 
 //optimiality for data transfer size 
@@ -579,8 +297,11 @@ int main() {
     uint64_t output;
     int i, rc;
     initialize_linked_list();
+    global_count = 0;
     func_info_t * info = insert_timed_function_gctx(*test2);
     //func_info_t * info = insert_timed_function_gctx(*test);
+    printf("counter: %d\n", counter(*fflush, NULL));
+    
     printf("%lu\n", info->cycles);
     info = insert_timed_function_gctx(*test3);
     printf("**%lu\n", info->cycles);
